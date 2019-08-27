@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,6 +33,7 @@ namespace L2_P3_10.HttpWebServer
         private string serverDirectory;
 
         const string mainPage = "index.html";
+        const string participantsFile = "Participants.json";
 
 
         public Server(string URI)
@@ -114,6 +117,9 @@ namespace L2_P3_10.HttpWebServer
                     using (StreamReader file = new StreamReader(filePath))
                     {
                         string responseStr = file.ReadToEnd();
+
+                        responseStr = Participants.Replace(participantsFile, responseStr);
+
                         byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseStr);
                         response.ContentLength64 = buffer.Length;
                         Stream output = response.OutputStream;
@@ -158,6 +164,50 @@ namespace L2_P3_10.HttpWebServer
             {
                 return serverDirectory + path;
             }
+        }
+    }
+
+    [DataContract]
+    class Participants
+    {
+        [DataMember]
+        public List<String> ListParticipants { get; set; }
+
+        public static Participants Read(string path)
+        {
+            if (!File.Exists(path))
+                return null;
+
+            object p;
+
+            DataContractJsonSerializer jsonFormatter = new DataContractJsonSerializer(typeof(Participants));
+
+            using (FileStream fs = new FileStream(path, FileMode.Open))
+            {
+                p = jsonFormatter.ReadObject(fs);
+            }
+            return p as Participants;
+        }
+        
+        public static string HTMLView(string path)
+        {
+            string HTML = "";
+            Participants participants = Participants.Read(path);
+            foreach(string p in participants.ListParticipants)
+            {
+                HTML = HTML + "<li>" + p + "</li>";
+            }
+            return HTML;
+        }
+        public static string Replace(string path, string responseStr)
+        {
+            if (responseStr.Contains("{{participants}}"))
+            {
+                string participantsHTML = Participants.HTMLView(path);
+                responseStr = responseStr.Replace("{{participants}}", participantsHTML);
+            }
+            return responseStr;
+
         }
     }
 }
