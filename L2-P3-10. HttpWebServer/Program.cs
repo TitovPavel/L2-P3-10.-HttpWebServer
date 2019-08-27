@@ -24,7 +24,7 @@ namespace L2_P3_10.HttpWebServer
         }
     }
 
-    class Server
+    class Server: IDisposable
     {
         private HttpListener listener;
 
@@ -77,6 +77,11 @@ namespace L2_P3_10.HttpWebServer
         }
 
         public void Stop()
+        {
+            this.Dispose();
+        }
+
+        public void Dispose()
         {
             listener.Stop();
             listener.Close();
