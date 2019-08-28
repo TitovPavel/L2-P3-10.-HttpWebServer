@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -104,13 +105,27 @@ namespace L2_P3_10.HttpWebServer
                 }
 
                 HttpListenerResponse response = context.Response;
+                HttpListenerRequest request = context.Request;
 
                 if (context.Request.HttpMethod.Equals("GET"))
                 {
-                    string filePath = GetPath(context.Request.Url.AbsolutePath);
+                    string filePath = GetPath(request.Url.AbsolutePath);
                     if (!File.Exists(filePath))
                     {
                         response.StatusCode = 404;
+                        return;
+                    }
+
+                    string ifModifiedSince = request.Headers.Get("if-Modified-Since");
+                    DateTime dateTimeModified;
+                    
+                    if (ifModifiedSince == null || ( DateTime.TryParse(ifModifiedSince, out dateTimeModified) && dateTimeModified.AddMinutes(2) < DateTime.Now ) )
+                    {
+                        SetLastModified(response);
+                    }
+                    else
+                    {
+                        response.StatusCode = 304;
                         return;
                     }
 
@@ -126,6 +141,7 @@ namespace L2_P3_10.HttpWebServer
                         output.Write(buffer, 0, buffer.Length);
                         output.Close();
                     }
+                  
                 }
                 else
                 {
@@ -164,6 +180,11 @@ namespace L2_P3_10.HttpWebServer
             {
                 return serverDirectory + path;
             }
+        }
+
+        private void SetLastModified(HttpListenerResponse response)
+        {
+            response.AppendHeader("Last-modified", DateTime.Now.ToString()); 
         }
     }
 
