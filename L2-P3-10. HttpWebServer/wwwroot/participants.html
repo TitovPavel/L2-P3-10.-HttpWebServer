@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Список участникуов</title>
+</head>
+<body>
+    <ol>{{participants}}</ol>
+    <a href="index.html">Домой</a>
+	<br>
+	<br>
+	  <input type="Text" name="message" id="message">
+        <input type="submit" value="Отправить" id="send">
+    
+
+<script>
+	var socket = new WebSocket("ws://localhost:8881");
+ 
+document.getElementById('send').onclick = function () {
+    var SendMessage = document.getElementById('message').value;
+    socket.send(SendMessage);
+	document.getElementById('message').value = "";
+};
+ 
+socket.onmessage = function (event) {
+	var message = document.createElement("div");
+	message.innerHTML = event.data;
+	document.body.appendChild(message);;
+	};
+ 
+</script>
+
+</body>
+</html>
