@@ -10,15 +10,20 @@
     <a href="index.html">Домой</a>
 	<br>
 	<br>
-	  <input type="Text" name="message" id="message">
-        <input type="submit" value="Отправить" id="send">
+	<div>Name:</div>
+	<input type="Text" name="nameUser" id="nameUser">
+    <div>Message:</div>
+	<input type="Text" name="message" id="message">
+    <input type="submit" value="Отправить" id="send">
     
 
 <script>
 	var socket = new WebSocket("ws://localhost:8881");
  
 document.getElementById('send').onclick = function () {
-    var SendMessage = document.getElementById('message').value;
+	var nameUser = document.getElementById('nameUser').value;
+    var message = document.getElementById('message').value;
+	var SendMessage = "" + nameUser + ": " + message;
     socket.send(SendMessage);
 	document.getElementById('message').value = "";
 };

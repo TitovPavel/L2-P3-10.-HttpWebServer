@@ -51,6 +51,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Contollers\BaseController.cs" />
+    <Compile Include="Contollers\IndexController.cs" />
+    <Compile Include="Contollers\ParticipantsCobtroller.cs" />
+    <Compile Include="Contollers\VoteController.cs" />
+    <Compile Include="Models\Participants.cs" />
+    <Compile Include="Models\ParticipantsView.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -58,6 +64,7 @@
     <None Include="App.config" />
     <None Include="packages.config" />
     <None Include="Participants.json" />
+    <None Include="wwwroot\Participants.json" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="wwwroot\index.html" />
@@ -67,5 +74,6 @@
     </Content>
     <Content Include="wwwroot\vote.html" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
