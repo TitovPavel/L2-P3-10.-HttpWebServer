@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29201.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "L2-P3-10. HttpWebServer", "L2-P3-10. HttpWebServer\L2-P3-10. HttpWebServer.csproj", "{CF7DF4EE-7D01-42A0-87F8-ACD4F44E3B3A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpWebServer", "L2-P3-10. HttpWebServer\HttpWebServer.csproj", "{CF7DF4EE-7D01-42A0-87F8-ACD4F44E3B3A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
