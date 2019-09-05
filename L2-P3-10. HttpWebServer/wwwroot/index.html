@@ -1,0 +1,19 @@
+﻿<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>ХЕЛОУИН!!!</title>
+</head>
+<body>
+    <p>Всем привет. Приходите не вечеринку</p>
+	<a href="vote.html">Проголосовать.</a><br>
+    <a href="participants.html">Список участников</a><br>
+	<script>
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', 'participants_list', false);
+		xhr.send();
+		if (xhr.status == 200) {
+		document.write(xhr.responseText);
+	}
+</script>
+</body>
+</html>

@@ -1,1 +1,1 @@
-﻿serverDirectory=C:\
+﻿serverDirectory=c:\Users\p.titov\source\repos\L2-P3-10. HttpWebServer\L2-P3-10. HttpWebServer\wwwroot\

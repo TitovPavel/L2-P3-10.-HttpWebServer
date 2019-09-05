@@ -1,11 +1,10 @@
-﻿using System;
+﻿using L2_P3_10.HttpWebServer.Contoller;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
+using System.Net.WebSockets;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace L2_P3_10.HttpWebServer
 {
@@ -14,30 +13,30 @@ namespace L2_P3_10.HttpWebServer
         static void Main(string[] args)
         {
             Server ws = new Server("http://*:8881/");
-            ws.Run();
+            ws.RunAsync();
 
             Console.WriteLine("Press a key to quit.");
             Console.ReadKey();
 
             ws.Stop();
-
         }
     }
 
     class Server: IDisposable
     {
         private HttpListener listener;
+        private List<WebSocket> clients = new List<WebSocket>();
 
         private string serverDirectory;
 
-        const string mainPage = "index.html";
-
+        private DateTime dateModificat = DateTime.Now;
 
         public Server(string URI)
         {
             ReadSettings();
             listener = new HttpListener();
             listener.Prefixes.Add(URI);
+
             try
             {
                 listener.Start();
@@ -63,17 +62,24 @@ namespace L2_P3_10.HttpWebServer
             }
         }
 
-        public void Run()
+        public async void RunAsync()
         {
-            ThreadPool.QueueUserWorkItem(o =>
-            {
-                Console.WriteLine("Webserver running...");
+            Console.WriteLine("Webserver running...");
 
-                while (listener.IsListening)
+            while (listener.IsListening)
+            {
+                HttpListenerContext context = await listener.GetContextAsync();
+
+                if (context.Request.IsWebSocketRequest)
                 {
-                    ThreadPool.QueueUserWorkItem(WriteToClient, listener.GetContext());
+                    WriteToWebSocketAsync(context);
                 }
-            });
+                else
+                {
+                    WriteToClient(context);
+                }
+            }
+
         }
 
         public void Stop()
@@ -81,53 +87,107 @@ namespace L2_P3_10.HttpWebServer
             this.Dispose();
         }
 
+
+        private bool disposed = false;
         public void Dispose()
         {
-            listener.Stop();
-            listener.Close();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                }
+                listener.Stop();
+                listener.Close();
 
+                disposed = true;
+            }
+        }
 
-        private void WriteToClient(object obj)
+        ~Server()
+        {
+            Dispose(false);
+        }
+
+        private async void WriteToWebSocketAsync(HttpListenerContext context)
         {
 
-            var context = obj as HttpListenerContext;
+            HttpListenerWebSocketContext webSocketContext = await context.AcceptWebSocketAsync(null);
+            WebSocket webSocket = webSocketContext.WebSocket;
+
+            clients.Add(webSocket);
+
+            while (webSocket.State == WebSocketState.Open)
+            {
+                var buffer = new ArraySegment<Byte>(new byte[1024]);
+                var result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
+
+                for (int i = 0; i < clients.Count; i++)
+                {
+                    WebSocket client = clients[i];
+                    try
+                    {
+                        if (client.State == WebSocketState.Open)
+                        {
+                            await client.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
+                        }
+                    }
+
+                    catch (ObjectDisposedException)
+                    {
+                        try
+                        {
+                            clients.Remove(client);
+                            i--;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void WriteToClient(HttpListenerContext context)
+        {
             try
             {
-                if (context == null)
+                BaseController targetController;
+                HttpListenerRequest request = context.Request;
+
+                if (request.Url.AbsolutePath == "/vote.html" || request.Url.AbsolutePath == "/vote")
                 {
-                    return;
+                    if (request.Url.AbsolutePath == "/vote")
+                    {
+                        dateModificat = DateTime.Now;
+
+                    }
+                    targetController = new VoteController(serverDirectory);
                 }
-
-                HttpListenerResponse response = context.Response;
-
-                if (context.Request.HttpMethod.Equals("GET"))
+                else if (request.Url.AbsolutePath == "/participants.html" || request.Url.AbsolutePath == "/participants_list")
                 {
-                    string filePath = GetPath(context.Request.Url.AbsolutePath);
-                    if (!File.Exists(filePath))
-                    {
-                        response.StatusCode = 404;
-                        return;
-                    }
-
-                    using (StreamReader file = new StreamReader(filePath))
-                    {
-                        string responseStr = file.ReadToEnd();
-                        byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseStr);
-                        response.ContentLength64 = buffer.Length;
-                        Stream output = response.OutputStream;
-                        output.Write(buffer, 0, buffer.Length);
-                        output.Close();
-                    }
+                    targetController = new ParticipantsController(serverDirectory, dateModificat);
+                }
+                else if (request.Url.AbsolutePath == "/index.html" || request.Url.AbsolutePath == "/")
+                {
+                    targetController = new IndexController(serverDirectory);
                 }
                 else
                 {
-                    response.StatusCode = 501;
+                    context.Response.StatusCode = 404;
                     return;
                 }
+
+                targetController.Handle(context);
+
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
@@ -139,25 +199,5 @@ namespace L2_P3_10.HttpWebServer
                 }
             }
         }
-
-        private string GetPath(String path)
-        {
-            if (path.IndexOf("/") == 0)
-            {
-                path = path.Substring(1);
-            }
-
-            if (path == "")
-                path = mainPage;
-
-            if (serverDirectory == null)
-            {
-                return Path.GetFullPath(path);
-            }
-            else
-            {
-                return serverDirectory + path;
-            }
-        }
-    }
+    }   
 }
