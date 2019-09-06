@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-namespace L2_P3_10.HttpWebServer.Models
+namespace HttpWebServer.Models
 {
-    [DataContract]
-    class ParticipantsView
+    class Participant
     {
-        [DataMember]
-        public List<String> ListParticipants { get; set; }
-
+        public Participant(string name, bool attend)
+        {
+            Name = name;
+            Attend = attend;
+        }
+        public string Name { get; set; }
+        public bool Attend { get; set; }
     }
 }

@@ -1,28 +1,31 @@
-﻿using L2_P3_10.HttpWebServer.Models;
+﻿using HttpWebServer.BL;
+using HttpWebServer.DAL;
+using HttpWebServer.Infrastructure;
+using HttpWebServer.Models;
 using System;
 using System.Net;
 
-namespace L2_P3_10.HttpWebServer.Contoller
+namespace HttpWebServer.Contoller
 {
     class ParticipantsController : BaseController
     {
-        private DateTime DateModificat { get; set; }
+        public DateTime DateModificat { get; set; }
 
-        public ParticipantsController(string serverDirectory, DateTime dateModificat) : base(serverDirectory)
+        public ParticipantsController(IParticipantsService participantsService, ILogger logger, DateTime dateModificat) : base(participantsService, logger)
         {
             DateModificat = dateModificat;
         }
         public override void Handle(HttpListenerContext context)
         {
+            Logger.Info(context.Request.Url.ToString());
 
             if (context.Request.HttpMethod.Equals("GET"))
             {
-                string responseStr;
+                string responseStr="";
 
                 if (context.Request.Url.AbsolutePath == "/participants_list")
                 {
-                    string participantsFilePath = GetPath(Participants.participantsFile);
-                    responseStr = $"<ol>{Participants.HTMLView(participantsFilePath)}</ol>";
+                    responseStr = $"<ol>{ParticipantsHTML.HTMLView(ParticipantsService)}</ol>";
                 }
                 else
                 {
@@ -42,8 +45,8 @@ namespace L2_P3_10.HttpWebServer.Contoller
                     string filePath = GetPath("participants.html");
                     responseStr = GetResponse(filePath);
 
-                    string participantsFilePath = GetPath(Participants.participantsFile);
-                    responseStr = Participants.Replace(participantsFilePath, responseStr);
+                    string participantsFilePath = GetPath(ParticipantsRepository.participantsFile);
+                    responseStr = ParticipantsHTML.Replace(ParticipantsService, responseStr);
                 }
 
                 Send(context, responseStr);

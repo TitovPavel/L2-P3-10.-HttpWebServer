@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{CF7DF4EE-7D01-42A0-87F8-ACD4F44E3B3A}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>L2_P3_10.HttpWebServer</RootNamespace>
-    <AssemblyName>L2_P3_10.HttpWebServer</AssemblyName>
+    <RootNamespace>HttpWebServer</RootNamespace>
+    <AssemblyName>HttpWebServer</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -55,7 +55,14 @@
     <Compile Include="Contollers\IndexController.cs" />
     <Compile Include="Contollers\ParticipantsCobtroller.cs" />
     <Compile Include="Contollers\VoteController.cs" />
-    <Compile Include="Models\Participants.cs" />
+    <Compile Include="Infrastructure\Container.cs" />
+    <Compile Include="Infrastructure\ILogger.cs" />
+    <Compile Include="DAL\IParticipantsRepository.cs" />
+    <Compile Include="BL\IParticipantsService.cs" />
+    <Compile Include="Infrastructure\Logger.cs" />
+    <Compile Include="Models\ParticipantsHTML.cs" />
+    <Compile Include="DAL\ParticipantsRepository.cs" />
+    <Compile Include="BL\ParticipantsService.cs" />
     <Compile Include="Models\ParticipantsView.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
