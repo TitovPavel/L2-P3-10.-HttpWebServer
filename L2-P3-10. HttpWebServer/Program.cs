@@ -1,4 +1,7 @@
-﻿using L2_P3_10.HttpWebServer.Contoller;
+﻿using HttpWebServer.BL;
+using HttpWebServer.Contoller;
+using HttpWebServer.Infrastructure;
+using HttpWebServer.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,13 +9,15 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 
-namespace L2_P3_10.HttpWebServer
+namespace HttpWebServer
 {
     class Program
     {
+        public static string serverDirectory;
+
         static void Main(string[] args)
         {
-            Server ws = new Server("http://*:8881/");
+            Server ws = new Server("http://localhost:8881/");
             ws.RunAsync();
 
             Console.WriteLine("Press a key to quit.");
@@ -27,13 +32,17 @@ namespace L2_P3_10.HttpWebServer
         private HttpListener listener;
         private List<WebSocket> clients = new List<WebSocket>();
 
-        private string serverDirectory;
-
         private DateTime dateModificat = DateTime.Now;
+        readonly ILogger logger;
+        readonly IParticipantsService participantsService;
+        readonly Locator container = new Locator();
 
         public Server(string URI)
         {
             ReadSettings();
+            container.Register();
+            participantsService = container.Resolve(typeof(IParticipantsService)) as IParticipantsService;
+            logger = container.Resolve(typeof(ILogger)) as ILogger;
             listener = new HttpListener();
             listener.Prefixes.Add(URI);
 
@@ -56,7 +65,7 @@ namespace L2_P3_10.HttpWebServer
                 {
                     if(line.Contains("serverDirectory="))
                     {
-                        serverDirectory = line.Replace("serverDirectory=", "");
+                        Program.serverDirectory = line.Replace("serverDirectory=", "");
                     }
                 }
             }
@@ -168,15 +177,16 @@ namespace L2_P3_10.HttpWebServer
                         dateModificat = DateTime.Now;
 
                     }
-                    targetController = new VoteController(serverDirectory);
+                    targetController = container.Resolve("Vote") as BaseController;
                 }
                 else if (request.Url.AbsolutePath == "/participants.html" || request.Url.AbsolutePath == "/participants_list")
                 {
-                    targetController = new ParticipantsController(serverDirectory, dateModificat);
+                    targetController = new ParticipantsController(participantsService, logger, dateModificat);
+
                 }
                 else if (request.Url.AbsolutePath == "/index.html" || request.Url.AbsolutePath == "/")
                 {
-                    targetController = new IndexController(serverDirectory);
+                    targetController = container.Resolve("Index") as BaseController;
                 }
                 else
                 {

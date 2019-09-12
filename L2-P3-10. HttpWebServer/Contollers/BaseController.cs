@@ -1,21 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using HttpWebServer.BL;
+using HttpWebServer.Infrastructure;
+using System;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace L2_P3_10.HttpWebServer.Contoller
+namespace HttpWebServer.Contoller
 {
     abstract class BaseController
     {
 
-        protected string ServerDirectory { get; set; }
+        public string ServerDirectory { get; set; }
+        protected IParticipantsService ParticipantsService { get; set; }
+        protected ILogger Logger { get; set; }
 
-        protected BaseController(string serverDirectory)
+        protected BaseController(IParticipantsService participantsService, ILogger logger)
         {
-            ServerDirectory = serverDirectory;
+            ParticipantsService = participantsService;
+            Logger = logger;
+            ServerDirectory = Program.serverDirectory;
         }
         public abstract void Handle(HttpListenerContext context);
 

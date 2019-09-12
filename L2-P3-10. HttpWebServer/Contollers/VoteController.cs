@@ -1,21 +1,21 @@
-﻿using L2_P3_10.HttpWebServer.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using HttpWebServer.BL;
+using HttpWebServer.Infrastructure;
+using System.Collections.Specialized;
+using System.IO;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+using System.Web;
 
-namespace L2_P3_10.HttpWebServer.Contoller
+namespace HttpWebServer.Contoller
 {
     class VoteController : BaseController
     {
-        public VoteController(string serverDirectory) :base(serverDirectory)
+        public VoteController(IParticipantsService participantsService, ILogger logger) :base(participantsService, logger)
         {
 
         }
         public override void Handle(HttpListenerContext context)
         {
+            Logger.Info(context.Request.Url.ToString());
             if (context.Request.HttpMethod.Equals("GET"))
             {
                 string filePath = GetPath("vote.html");
@@ -26,8 +26,20 @@ namespace L2_P3_10.HttpWebServer.Contoller
             {
                 if (context.Request.Url.AbsolutePath == "/vote")
                 {
-                    string participantsFilePath = GetPath(Participants.participantsFile);
-                    Participants.Add(participantsFilePath, context.Request);
+                    StreamReader reader = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding);
+                    string s = reader.ReadToEnd();
+
+                    NameValueCollection query = HttpUtility.ParseQueryString(s);
+
+                    if (query["attend"] == "on")
+                    {
+                        ParticipantsService.Vote(query["name"], true);
+                    }
+                    else 
+                    {
+                        ParticipantsService.Vote(query["name"], false);
+                    }
+
                     context.Response.Redirect("participants.html");
                 }
                 else
